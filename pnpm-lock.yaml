@@ -1,0 +1,47 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  plugins/twitch:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+    devDependencies:
+      '@discern/types':
+        specifier: workspace:^0.0.1
+        version: link:../../sdk/types
+      typescript:
+        specifier: ^5.5.4
+        version: 5.5.4
+
+  sdk/types:
+    dependencies:
+      '@deno/types':
+        specifier: ^0.0.1
+        version: 0.0.1
+
+packages:
+
+  '@deno/types@0.0.1':
+    resolution: {integrity: sha512-KTB6Blr05Iw7k7aMzPWlJX0kv08xXZ5Mu7fxSp0M1HnaOHDRnFC956I4PxYdOtN27+b2723Id2G2oofxLvA35A==}
+
+  typescript@5.5.4:
+    resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
+snapshots:
+
+  '@deno/types@0.0.1': {}
+
+  typescript@5.5.4: {}
+
+  zod@3.23.8: {}
