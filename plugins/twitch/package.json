@@ -1,5 +1,5 @@
 {
-    "name": "@discern/twitch-plugin",
+    "name": "@discern/twitch",
     "version": "0.0.1",
     "description": "Twitch plugin for discern.\nThis plugin allows you to interact with the Twitch API, mostly through receiving events through EventSub.",
     "author": "Discern Team",
@@ -11,6 +11,7 @@
     },
     "devDependencies": {
         "@discern/types": "workspace:^0.0.1",
+        "@discern/twitch": "workspace:^0.0.1",
         "typescript": "^5.5.4"
     },
     "discern": {

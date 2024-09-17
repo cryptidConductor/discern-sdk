@@ -1,7 +1,7 @@
+import { NotificationMessage } from "@discern/twitch/types";
 import {
   EventSubMessage,
   Message,
-  NotificationMessage,
   ReconnectMessage,
   WelcomeMessage,
 } from "./types";
@@ -240,7 +240,6 @@ export class Connection implements AsyncIterable<ConnectionMessage> {
     this.#postMortem(4906);
   }
 
-  // TODO: maybe take close reason?
   #postMortem(code?: number): void {
     this.#clearTimers();
     if (this.#websocket) {
@@ -285,17 +284,17 @@ export class Connection implements AsyncIterable<ConnectionMessage> {
 
     const data = result.data;
 
-    if (this.#seenMessages.has(data.metadata.messageId)) {
+    if (this.#seenMessages.has(data.metadata.message_id)) {
       console.info(
         "received a duplicate message from twitch; ignoring...",
-        data.metadata.messageId
+        data.metadata.message_id
       );
       return;
       // Technically, we should also check that the message is within
       // the last 10 minutes, but we'll ignore that for now.
     } else if (Message.isWelcome(data)) {
       console.log("Connected to Twitch EventSub!");
-      this.#heartBeatInterval = data.payload.session.keepaliveTimeoutSeconds;
+      this.#heartBeatInterval = data.payload.session.keepalive_timeout_seconds;
       this.#sessionId = data.payload.session.id;
       this.#pushMessage({ type: "welcome", data: data.payload });
       return;

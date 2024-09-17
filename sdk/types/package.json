@@ -5,5 +5,8 @@
     "type": "module",
     "dependencies": {
         "@deno/types": "^0.0.1"
+    },
+    "exports": {
+        "types": "./index.d.ts"
     }
 }

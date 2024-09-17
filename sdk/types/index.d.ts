@@ -1,3 +1,6 @@
+/// <reference lib="esnext" />
+/// <reference lib="dom" />
+
 import { type Deno } from "@deno/types";
 
 declare global {
@@ -17,13 +20,21 @@ declare global {
       signal?: AbortSignal;
     };
 
-    /**
-     * A message that can be sent to a topic.
-     *
-     * The shape of this message is determined by the topic it is being sent to,
-     * and so can't be determined statically.
-     */
-    export type SendMessage = unknown;
+    export type SubscriptionCreateOptions = {
+      /**
+       * The name of the queue to pass the subscription through.
+       *
+       * If this is specified, the subscription messages are passed through this
+       * queue before being delivered to the subscriber.
+       *
+       * Because of how the queue works, the resulting subscription is no
+       * longer for the specified topic name, but for a transient, randomly
+       * generated topic name namespaced under this plugin; a bridge is then
+       * created between the original topic and the transient topic, passing
+       * through the queue.
+       */
+      via?: string;
+    };
 
     const secretId: unique symbol;
     /**
@@ -241,8 +252,12 @@ declare global {
        * subscription will never yield a message.
        *
        * @param outputName - The name of the output to subscribe to.
+       * @param options - The options for creating the subscription.
        */
-      output(outputName: string): Promise<Subscription>;
+      output<C = undefined, R = undefined>(
+        outputName: string,
+        options?: SubscriptionCreateOptions
+      ): Promise<Subscription<C, R>>;
       /**
        * Retrieves a sender function for the input of the plugin.
        *
@@ -255,7 +270,7 @@ declare global {
        *
        * @param inputName - The name of the input to send the message to.
        */
-      input(inputName: string): (message: SendMessage) => Promise<number>;
+      input<R>(inputName: string): (message: R) => Promise<number>;
       /**
        * Sends a message to a plugin, requesting a response.
        *
@@ -270,11 +285,11 @@ declare global {
        * @param message - the message to send to the plugin.
        * @param options - the options for polling the subscription.
        */
-      ask(
+      ask<R, C = unknown>(
         inputName: string,
-        message: SendMessage,
+        message: R,
         options?: PollOptions
-      ): Promise<Message>;
+      ): Promise<Message<C>>;
     }
 
     /**
@@ -440,8 +455,12 @@ declare global {
      * If the topic name is not valid, this will reject with an error.
      *
      * @param topicName - the name of the topic to subscribe to.
+     * @param options - the options for creating the subscription.
      */
-    export function subscribe(topicName: string): Promise<Subscription>;
+    export function subscribe(
+      topicName: string,
+      options?: SubscriptionCreateOptions
+    ): Promise<Subscription>;
     /**
      * Publishes to the given topic name.
      *
@@ -455,9 +474,9 @@ declare global {
      * @param topicName - the name of the topic to publish to.
      * @param message - the message to publish to the topic.
      */
-    export function publish(
+    export function publish<M = unknown>(
       topicName: string,
-      message: SendMessage
+      message: M
     ): Promise<number>;
     /**
      * Subscribes to the given topic name, and waits for the next message.
@@ -497,11 +516,11 @@ declare global {
      * @param message - the message to send to the topic.
      * @param options - the options for polling the subscription.
      */
-    export function ask(
+    export function ask<M = unknown, C = unknown, R = unknown>(
       topicName: string,
-      message: SendMessage,
+      message: M,
       options?: PollOptions
-    ): Promise<Message>;
+    ): Promise<Message<C, R>>;
 
     /**
      * Looks up the given plugin by name.
@@ -583,7 +602,7 @@ declare global {
        *
        * @param outputName - The name of the output to send the message to.
        */
-      output(outputName: string): (message: SendMessage) => Promise<number>;
+      output<M>(outputName: string): (message: M) => Promise<number>;
       /**
        * Retrieves a subscription to the input of the plugin.
        *
@@ -591,8 +610,12 @@ declare global {
        * subscription to the named input of the plugin.
        *
        * @param inputName - The name of the input to subscribe to.
+       * @param options - The options for creating the subscription.
        */
-      input(inputName: string): Promise<Subscription>;
+      input<C = unknown, R = unknown>(
+        inputName: string,
+        options?: SubscriptionCreateOptions
+      ): Promise<Subscription<C, R>>;
 
       /**
        * The files API.
