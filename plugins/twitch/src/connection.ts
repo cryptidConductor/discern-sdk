@@ -1,4 +1,4 @@
-import { NotificationMessage } from "@discern/twitch/types";
+import { NotificationMessage } from "@discern/twitch-client/types";
 import {
   EventSubMessage,
   Message,

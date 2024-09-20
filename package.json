@@ -1,0 +1,6 @@
+{
+	"devDependencies": {
+		"@types/bun": "^1.1.9",
+		"bs58": "^6.0.0"
+	}
+}

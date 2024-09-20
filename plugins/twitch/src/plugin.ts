@@ -15,6 +15,7 @@ const abortController = new AbortController();
 const tokens = await loadTokens();
 
 addEventListener("load", async () => {
+  console.log(`loaded tokens: ${[...tokens.keys()].join(", ")}`);
   handleRequests(tokenInput, tokens, abortController);
 });
 

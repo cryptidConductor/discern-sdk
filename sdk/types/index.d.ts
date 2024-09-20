@@ -351,6 +351,20 @@ declare global {
        * @param key - the key to retrieve from the configuration.
        */
       secret(key: string): SecretId | null;
+      /**
+       * Retrieves a file from the configuration.
+       *
+       * If the given key does not correspond to a file in the configuration,
+       * this will return `null`.  If an error occurs while opening the file,
+       * this will reject with that error.
+       *
+       * @param key - the key to retrieve from the configuration.
+       * @param options - the options for opening the file.
+       */
+      file(
+        key: string,
+        options?: Deno.OpenOptions
+      ): Promise<Deno.FsFile | null>;
 
       /**
        * Retrieves the raw configuration.

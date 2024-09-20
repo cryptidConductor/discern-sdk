@@ -2,7 +2,7 @@ import {
   ConfigureSubscriptionRequest,
   TokenRequest,
   TokenSnapshotRequest,
-} from "@discern/twitch/types";
+} from "@discern/twitch-client/types";
 import { type Account } from "./types";
 import { Connection } from "./connection";
 

@@ -5,7 +5,7 @@ import {
   Metadata,
   NotificationMessage,
   ConfigureSubscriptionRequest,
-} from "@discern/twitch/types";
+} from "@discern/twitch-client/types";
 
 export interface Account {
   token: Token;

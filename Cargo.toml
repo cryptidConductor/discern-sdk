@@ -1,0 +1,30 @@
+
+[workspace]
+resolver = "2"
+members = ["scripts/twitch"]
+
+[workspace.lints.rust]
+missing_debug_implementations = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+rust_2021_compatibility = { level = "warn", priority = -1 }
+unsafe_code = "forbid"
+unused_must_use = "deny"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tokio_unstable)'] }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+all = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+unimplemented = "warn"
+todo = "warn"
+exhaustive_enums = "warn"
+impl_trait_in_params = "warn"
+map_err_ignore = "warn"
+mem_forget = "warn"
+correctness = { level = "deny", priority = -1 }
+missing_errors_doc = "allow"
+module_name_repetitions = "allow"
+large_futures = "warn"
+missing_panics_doc = "allow"

@@ -11,7 +11,7 @@
     },
     "devDependencies": {
         "@discern/types": "workspace:^0.0.1",
-        "@discern/twitch": "workspace:^0.0.1",
+        "@discern/twitch-client": "workspace:^0.0.1",
         "typescript": "^5.5.4"
     },
     "discern": {
@@ -35,7 +35,7 @@
                         "optional": false,
                         "settings": {
                             "clientId": {
-                                "env": "urn:discern:env:DISCERN_TWITCH_CLIENT_ID"
+                                "env": "env:DISCERN_TWITCH_CLIENT_ID"
                             },
                             "scope": "user:bot bits:read user:read:chat",
                             "allowedScopes": [

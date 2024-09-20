@@ -96,29 +96,6 @@ export const TokenRequest = z.discriminatedUnion("action", [
 ]);
 export type TokenRequest = z.infer<typeof TokenRequest>;
 
-export const SendChatMessageResponse = z.object({
-  data: z.array(
-    z.object({
-      message_id: z
-        .string()
-        .describe("The message id for the message that was sent."),
-      is_sent: z
-        .boolean()
-        .describe("If the message passed all checks and was sent."),
-      drop_reason: z
-        .object({
-          code: z.string().describe("Code for why the message was dropped."),
-          message: z
-            .string()
-            .describe("Message for why the message was dropped."),
-        })
-        .nullable()
-        .describe("The reason the message was dropped, if any."),
-    })
-  ),
-});
-export type SendChatMessageResponse = z.infer<typeof SendChatMessageResponse>;
-
 export const TokenSnapshotResponse = z.object({
   accessToken: z.string(),
   clientId: z.string(),

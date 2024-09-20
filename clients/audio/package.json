@@ -1,0 +1,17 @@
+{
+    "name": "@discern/audio-client",
+    "version": "0.0.1",
+    "description": "Audio plugin client for discern.",
+    "author": "Discern Team",
+    "license": "LGPL-3.0-only",
+    "type": "module",
+    "main": "src/index.ts",
+    "dependencies": {
+    },
+    "devDependencies": {
+        "@discern/types": "workspace:^0.0.1"
+    },
+    "exports": {
+        ".": "./src/index.ts"
+    }
+}

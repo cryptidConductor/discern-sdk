@@ -1,9 +1,40 @@
 /// <reference types="@discern/types" />
 
 type PollOptions = Parameters<typeof Discern.get>[1];
+import { ZodType } from "zod";
+import {
+  Ads,
+  Analytics,
+  Bits,
+  CcLs,
+  ChannelPoints,
+  Channels,
+  Charity,
+  Chat,
+  Clips,
+  Conduits,
+  Entitlements,
+  Extensions,
+  Games,
+  Goals,
+  GuestStar,
+  HypeTrain,
+  Moderation,
+  Polls,
+  Predictions,
+  Raids,
+  Schedule,
+  Search,
+  Streams,
+  Subscriptions,
+  Tags,
+  Teams,
+  Users,
+  Videos,
+  Whispers,
+} from "./api";
 import {
   NotificationMessage,
-  SendChatMessageResponse,
   TokenId,
   TokenSnapshotResponse,
   type TokenRequest,
@@ -13,6 +44,9 @@ export class Twitch {
   static plugin: Discern.Plugin | null = null;
 
   readonly #tokenId: TokenId;
+  #snapshot: TokenSnapshotResponse | null = null;
+
+  base: string = "https://api.twitch.tv/helix";
 
   /**
    * Retrieves the twitch client for the given token.
@@ -78,91 +112,173 @@ export class Twitch {
     }
   }
 
+  async snapshot() {
+    if (this.#snapshot) {
+      return this.#snapshot;
+    }
+
+    const shot = await snapshot(this.#tokenId);
+    this.#snapshot = shot;
+    setTimeout(() => (this.#snapshot = null), 10);
+    return shot;
+  }
+
+  async userId() {
+    const snapshot = await this.snapshot();
+    return snapshot.userId;
+  }
+
+  async request<Out>(
+    url: URL,
+    req: RequestInit,
+    type?: ZodType<Out, any, any>
+  ): Promise<Out> {
+    const snapshot = await this.snapshot();
+    req.headers = [
+      ["Client-Id", snapshot.clientId],
+      ["Authorization", `Bearer ${snapshot.accessToken}`],
+    ];
+    if (req.body) {
+      req.headers.push(["Content-Type", "application/json"]);
+    }
+    const response = await fetch(url, req);
+    if (response.ok) {
+      if (type) {
+        return type.parse(await response.json());
+      }
+      return await response.json();
+    } else if (response.status === 429) {
+      // TODO
+      const retryAfter = response.headers.get("Retry-After");
+      if (retryAfter) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, parseInt(retryAfter))
+        );
+        return this.request(url, req, type);
+      } else {
+        // TODO better error
+        throw new Error("Rate limited");
+      }
+    } else {
+      throw new Error("bad request");
+    }
+  }
+
+  async requestDownload(url: URL, req: RequestInit): Promise<Response> {
+    const snapshot = await this.snapshot();
+    req.headers = [
+      ["Client-Id", snapshot.clientId],
+      ["Authorization", `Bearer ${snapshot.accessToken}`],
+    ];
+    if (req.body) {
+      req.headers.push(["Content-Type", "application/json"]);
+    }
+    const response = await fetch(url, req);
+    if (response.ok) {
+      return response;
+    } else if (response.status === 429) {
+      // TODO
+      const retryAfter = response.headers.get("Retry-After");
+      if (retryAfter) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, parseInt(retryAfter))
+        );
+        return this.requestDownload(url, req);
+      } else {
+        // TODO better error
+        throw new Error("Rate limited");
+      }
+    } else {
+      throw new Error("bad request");
+    }
+  }
+
+  get channels() {
+    return new Channels(this);
+  }
+  get schedule() {
+    return new Schedule(this);
+  }
+  get analytics() {
+    return new Analytics(this);
+  }
+  get goals() {
+    return new Goals(this);
+  }
   get chat() {
     return new Chat(this);
   }
-}
-
-class Chat {
-  #twitch: Twitch;
-  constructor(twitch: Twitch) {
-    this.#twitch = twitch;
+  get channelPoints() {
+    return new ChannelPoints(this);
   }
-
-  async sendChatMessage({
-    broadcasterId,
-    message,
-    replyTo,
-  }: {
-    broadcasterId?: TokenId;
-    message: string;
-    replyTo?: string;
-  }) {
-    if (!Twitch.plugin) {
-      throw new Error("Twitch plugin not loaded?");
-    }
-    const senderSnapshot = await Twitch.plugin.ask<
-      TokenRequest,
-      TokenSnapshotResponse
-    >("token", {
-      action: "tokenSnapshot",
-      token: this.#twitch.tokenId,
-    });
-    let broadcasterSnapshot: Discern.Message<TokenSnapshotResponse>;
-    if (broadcasterId && broadcasterId !== this.#twitch.tokenId) {
-      broadcasterSnapshot = await Twitch.plugin.ask<
-        TokenRequest,
-        TokenSnapshotResponse
-      >("token", {
-        action: "tokenSnapshot",
-        token: broadcasterId,
-      });
-    } else {
-      broadcasterSnapshot = senderSnapshot;
-    }
-
-    if ("$error" in senderSnapshot.contents) {
-      throw new Error(
-        `Failed to get sender token: ${senderSnapshot.contents.$error}`
-      );
-    } else if ("$error" in broadcasterSnapshot.contents) {
-      throw new Error(
-        `Failed to get broadcaster token: ${broadcasterSnapshot.contents.$error}`
-      );
-    }
-
-    const sender = senderSnapshot.contents;
-    const broadcaster = broadcasterSnapshot.contents;
-
-    if (!sender.scopes.includes("user:write:chat")) {
-      throw new Error("Sender is missing the user:write:chat scope");
-    }
-
-    const response = await fetch("https://api.twitch.tv/helix/chat/messages", {
-      method: "POST",
-      headers: [
-        ["Authorization", `Bearer ${sender.accessToken}`],
-        ["Client-Id", sender.clientId],
-        ["Content-Type", "application/json"],
-      ],
-      body: JSON.stringify({
-        broadcaster_id: broadcaster.userId,
-        sender_id: sender.userId,
-        message,
-        reply_parent_message_id: replyTo,
-      }),
-    });
-
-    if (response.status === 200) {
-      const data = SendChatMessageResponse.parse(await response.json());
-      return data;
-    } else if (response.status === 429) {
-      throw new Error("Rate Limited!");
-    } else {
-      const body = await response.json();
-      console.warn({ response, body });
-      throw new Error("Failed to send message");
-    }
+  get subscriptions() {
+    return new Subscriptions(this);
+  }
+  get guestStar() {
+    return new GuestStar(this);
+  }
+  get games() {
+    return new Games(this);
+  }
+  get streams() {
+    return new Streams(this);
+  }
+  get raids() {
+    return new Raids(this);
+  }
+  get entitlements() {
+    return new Entitlements(this);
+  }
+  get hypeTrain() {
+    return new HypeTrain(this);
+  }
+  get conduits() {
+    return new Conduits(this);
+  }
+  get polls() {
+    return new Polls(this);
+  }
+  get whispers() {
+    return new Whispers(this);
+  }
+  get predictions() {
+    return new Predictions(this);
+  }
+  get search() {
+    return new Search(this);
+  }
+  get tags() {
+    return new Tags(this);
+  }
+  get moderation() {
+    return new Moderation(this);
+  }
+  get users() {
+    return new Users(this);
+  }
+  get videos() {
+    return new Videos(this);
+  }
+  get ccLs() {
+    return new CcLs(this);
+  }
+  get charity() {
+    return new Charity(this);
+  }
+  get teams() {
+    return new Teams(this);
+  }
+  get ads() {
+    return new Ads(this);
+  }
+  get bits() {
+    return new Bits(this);
+  }
+  get extensions() {
+    return new Extensions(this);
+  }
+  get clips() {
+    return new Clips(this);
   }
 }
 
