@@ -24,7 +24,7 @@ for await (const plugin of pluginFolders.scan(globOptions)) {
     const definition = await Bun.file(`${plugin}/package.json`).json();
     await $`esbuild --bundle ${plugin}/${definition.main} --format=esm --platform=neutral --outdir=${plugin}/dist --sourcemap`;
     await $`cp package.json ${plugin}/dist/`;
-    await $`deterministic-zip -r "${plugin}/plugin.zip" ${plugin}/dist`;
+    await $`cd ${plugin}/dist && deterministic-zip -r "../plugin.zip" .`;
     const name = definition.name.replaceAll(/@/g, "").replaceAll(/\//g, "-");
     const target = `dist/plugins/${name}-${definition.version}.zip`;
     await $`mv ${plugin}/plugin.zip ${target}`;
